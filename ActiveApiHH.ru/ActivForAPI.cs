@@ -1,5 +1,6 @@
 ﻿using ActiveApiHH.ru.AuthorizeAPI;
 using LibraryModels;
+using System;
 
 namespace ActiveApiHH.ru
 {
@@ -37,6 +38,51 @@ namespace ActiveApiHH.ru
 
         }
 
+        
+        public object GetToken(string authorization_code) {
+            try
+            {
+                IAuthorize authorize = new Authorize();
+                var result = authorize.GetTokenRemoteApi(authorization_code);
+                return result;
+
+            }
+            catch (Exception e) { 
+                return new ErrorApp
+                {
+                    level = LevelError.ActiveWithRemoteApi,
+                    ErrorDescription = e.Message,
+                    Message = "Ошибка ответа от стороннего сервиса на стадии получения токена"
+                };
+
+
+            }
+        
+        
+        }
+
+
+       public object GetRefresh_token(object session) {
+            try
+            {
+                IAuthorize authorize = new Authorize();
+                var result = authorize.Refresh_token(session);
+                return result;
+
+            }
+            catch (Exception e)
+            {
+                return new ErrorApp
+                {
+                    level = LevelError.ActiveWithRemoteApi,
+                    ErrorDescription = e.Message,
+                    Message = "Ошибка ответа от стороннего сервиса на стадии замены токена"
+                };
+
+
+            }
+
+        }
 
     }
 }

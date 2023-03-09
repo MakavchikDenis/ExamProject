@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.Collections.Specialized;
 using System.Net.Http;
+using API.Models;
+using LibraryModels;
+using System.Text.Json;
+using System.Net;
 
 
 
@@ -31,12 +35,93 @@ namespace ActiveApiHH.ru.AuthorizeAPI
             string ParameterClient_id = String.Join("=", "client_id", collection.Get("ParamClient_Id"));
             string ParameterRedirect_uri = String.Join("=", "redirect_uri", collection.Get("LocalPathAuthorize"));
 
-            uri.Query = String.Join("&",new string[] { ParameterResponse_type, ParameterClient_id, ParameterRedirect_uri });
+            uri.Query = String.Join("&", new string[] { ParameterResponse_type, ParameterClient_id, ParameterRedirect_uri });
 
 
             return uri.Uri;
 
 
+
+        }
+
+
+        public object GetTokenRemoteApi(string authorization_code)
+        {
+            var collection = ConfigurationManager.AppSettings;
+            string? host = collection.Get("RemoteHost");
+            string? path = collection.Get("RemotePathGetToken");
+            var bodyRequest = new
+            {
+                gran_type = collection.Get("ParamForGetTokenGrant_Type"),
+                client_id = collection.Get("ParamClient_Id"),
+                client_secret = collection.Get("V2F7OJ3522JCUU9245TBOMJ8ENJMGNEC2HF81RFCSN3SAKOSR418UR97DTOF63D1"),
+                redirect_uri = collection.Get("https://localhost:44203/api/Based/GetAuthorization"),
+                code = authorization_code
+            };
+
+            UriBuilder builder = new UriBuilder();
+            builder.Host = host;
+            builder.Path = path;
+
+
+
+            using HttpClient http = new HttpClient();
+            http.Timeout = TimeSpan.FromSeconds(180);
+            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, builder.Uri);
+            httpRequest.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()));
+            HttpResponseMessage httpResponse = http.SendAsync(httpRequest).Result;
+
+            if (httpResponse.StatusCode != HttpStatusCode.OK)
+            {
+                return new ErrorApp
+                {
+                    level = LevelError.ActiveWithRemoteApi,
+                    ErrorDescription = ((int)httpResponse.StatusCode).ToString(),
+                    Message = "Ошибка ответа от стороннего сервиса на стадии получения токена"
+                };
+
+
+            }
+
+            string result = httpResponse.Content.ReadAsStringAsync().Result;
+            return result;
+
+        }
+
+        public object Refresh_token(object session) {
+            Session sessionOld = (Session)session;
+            var collection = ConfigurationManager.AppSettings;
+            UriBuilder builder = new UriBuilder();
+            builder.Host = collection.Get("RemoteHost");
+            builder.Path = collection.Get("RemotePathGetToken");
+
+            var bodyRequest = new
+            {
+                grant_type = collection.Get("ParamForRefreshTokenGrant_type"),
+                refresh_token = sessionOld.Refresh_token
+
+            };
+
+
+            using HttpClient http = new HttpClient();
+            http.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
+            http.Timeout = TimeSpan.FromSeconds(180);
+
+            HttpResponseMessage httpResponse = http.PostAsync(builder.Uri.AbsoluteUri, new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()))).Result;
+
+            if (!httpResponse.IsSuccessStatusCode) {
+                return new ErrorApp
+                {
+                    level = LevelError.ActiveWithRemoteApi,
+                    ErrorDescription = ((int)httpResponse.StatusCode).ToString(),
+                    Message = "Ошибка ответа от стороннего сервиса на стадии замены токена"
+                };
+
+            }
+
+            return httpResponse.Content.ReadAsStringAsync().Result;
+            
 
         }
     }

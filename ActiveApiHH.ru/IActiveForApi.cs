@@ -8,7 +8,11 @@ namespace ActiveApiHH.ru
 {
     public interface IActiveForApi
     {
-         object GetAuthorizeUri();
+        object GetAuthorizeUri();
+
+        object GetToken( string authorization_code);
+
+        object GetRefresh_token(object session);
 
     }
 }
