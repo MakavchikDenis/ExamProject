@@ -62,7 +62,9 @@ namespace LocalApi.Controllers
             /// если ошибки редиректим на страницу WebApplication
             catch (ErrorApp e)
             {
-                string Error = handler.Exchange<ErrorApp>(e);
+                (int level, string description, string message) = e;
+                
+                string Error = handler.Exchange<(int,string,string)>((level,description, message));
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -77,7 +79,10 @@ namespace LocalApi.Controllers
             catch (Exception e)
             {
                 ErrorApp error = new ErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка аутентификации.");
-                string Error = handler.Exchange<ErrorApp>(error);
+
+                (int level, string description, string message) = error;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+                //string Error = handler.Exchange<ErrorApp>(error);
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -108,7 +113,7 @@ namespace LocalApi.Controllers
                 ///Если промежуточный токен не получен => возвращаемся в WepApplication c ошибкой в параметрах
                 if (authorization_code == default)
                 {
-                    throw new ErrorApp
+                    throw new ErrorApp()
                     {
                         level = LevelError.ActiveWithLocalApi,
                         ErrorDescription = "Не получен промежуточный токен от стороннего сервиса.",
@@ -127,12 +132,14 @@ namespace LocalApi.Controllers
                 });
 
 
-                return RedirectToAction(actionName: "GetTokenRemoteApi", controllerName:"Based", new { authorization_code  = authorization_code});
+                return RedirectToAction(actionName: "GetTokenRemoteApi", controllerName: "Based", new { authorization_code = authorization_code });
 
             }
             catch (ErrorApp e)
             {
-                string Error = handler.Exchange<ErrorApp>(e);
+                (int level, string description, string message) = e;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+                //string Error = handler.Exchange<ErrorApp>(e);
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -149,7 +156,9 @@ namespace LocalApi.Controllers
             {
 
                 ErrorApp error = new ErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе получения промежуточного токена от сервиса.");
-                string Error = handler.Exchange<ErrorApp>(error);
+                (int level, string description, string message) = error;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+                //string Error = handler.Exchange<ErrorApp>(error);
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -170,11 +179,11 @@ namespace LocalApi.Controllers
 
         /// <summary>
         /// Получаем от стороннего АПИ основной токен для работы, если ошибка возвращаемся на основную страницу WebApp, 
-        /// если норм=> редиректим дальше и получаем данные из стороннего сервиса по пользователю
+        /// если норм=> запрашиваем у сторонне сервичас данные о пользователе
         /// </summary>
         /// <param name="authorization_code"></param>
-        [HttpPost("GetTokenRemoteApi")]
-        public RedirectResult GetTokenRemoteApi([FromQuery] string authorization_code)
+        [HttpGet("GetTokenRemoteApi")]
+        public object GetTokenRemoteApi([FromQuery] string authorization_code)
         {
             try
             {
@@ -199,14 +208,17 @@ namespace LocalApi.Controllers
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), "Succes", _token: session.Acces_token,
                     _actionDetails: authorization_code);
                 repositoryDapper.Insert(loggs);
-               
+
+                return Redirect("");
 
 
             }
             catch (ErrorApp e)
             {
+                (int level, string description, string message) = e;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), "Error",
-                    _errorMessage: handler.Exchange<ErrorApp>(e));
+                    _errorMessage: Error);
                 repositoryDapper.Insert(loggs);
                 return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={e.Message}"));
 
@@ -214,8 +226,10 @@ namespace LocalApi.Controllers
             catch (Exception e)
             {
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе получения токена пользователя");
+                (int level, string description, string message) = error;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), "Error",
-                    _errorMessage: handler.Exchange<ErrorApp>(error));
+                    _errorMessage: Error);
                 repositoryDapper.Insert(loggs);
                 return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={error.Message}"));
 
@@ -228,7 +242,7 @@ namespace LocalApi.Controllers
         /// <summary>
         /// По истечению времени токена=>обращение в сторонний АПИ для получения нового токена
         /// </summary>
-        /// <returns></returns>
+        /// <returns> Error || NewToken </returns>
         [NonAction]
         public object GetRefresh_Token(Guid token) {
             try
@@ -251,21 +265,27 @@ namespace LocalApi.Controllers
                    _actionDetails: token.ToString());
                 repositoryDapper.Insert(loggs);
 
+                return sessionNew.Acces_token;
 
             }
             catch (ErrorApp e)
             {
+                (int level, string description, string message) = e;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Error",
-                    _errorMessage: handler.Exchange<ErrorApp>(e));
+                    _errorMessage: Error);
                 repositoryDapper.Insert(loggs);
                 return e;
 
 
             }
             catch (Exception e) {
+
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе замены токена пользователя");
+                (int level, string description, string message) = error;
+                string Error = handler.Exchange<(int, string, string)>((level, description, message));
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Error",
-                    _errorMessage: handler.Exchange<ErrorApp>(error));
+                    _errorMessage: Error);
                 repositoryDapper.Insert(loggs);
                 return error;
 

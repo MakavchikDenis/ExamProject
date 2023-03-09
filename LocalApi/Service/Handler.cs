@@ -14,7 +14,7 @@ namespace LocalApi.Service
         /// <param name="ob"></param>
         /// <returns></returns>
         public string Exchange<T>(T ob) => JsonSerializer.Serialize<T>(ob);
-
+       
 
         /// <summary>
         /// Создаем объект с ошибкой

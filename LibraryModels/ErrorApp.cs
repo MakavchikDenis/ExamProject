@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace LibraryModels
 {
     // Класс для ошибок
-    public class ErrorApp:Exception
+    public class ErrorApp :Exception
     {
 
         // уровень ошибки
-        public LevelError level;
+        public LevelError level { get; set; }
         // описание ошибки
         public string ErrorDescription {get;set;}
         // вывод на клиентскую сторону

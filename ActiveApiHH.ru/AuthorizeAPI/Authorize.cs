@@ -54,8 +54,8 @@ namespace ActiveApiHH.ru.AuthorizeAPI
             {
                 gran_type = collection.Get("ParamForGetTokenGrant_Type"),
                 client_id = collection.Get("ParamClient_Id"),
-                client_secret = collection.Get("V2F7OJ3522JCUU9245TBOMJ8ENJMGNEC2HF81RFCSN3SAKOSR418UR97DTOF63D1"),
-                redirect_uri = collection.Get("https://localhost:44203/api/Based/GetAuthorization"),
+                client_secret = collection.Get("ParamClient_secret"),
+                redirect_uri = collection.Get("LocalPathAuthorize"),
                 code = authorization_code
             };
 
@@ -67,10 +67,17 @@ namespace ActiveApiHH.ru.AuthorizeAPI
 
             using HttpClient http = new HttpClient();
             http.Timeout = TimeSpan.FromSeconds(180);
+            //http.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
             HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, builder.Uri);
-            httpRequest.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-            httpRequest.Content = new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()));
-            HttpResponseMessage httpResponse = http.SendAsync(httpRequest).Result;
+            //httpRequest.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+            httpRequest.Content = new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()), encoding:Encoding.UTF8,
+                mediaType: "application/x-www-form-urlencoded");
+
+            StringContent content = new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()), encoding: Encoding.UTF8,
+                mediaType: "application/x-www-form-urlencoded");
+
+
+            HttpResponseMessage httpResponse = http.PostAsync(builder.Uri, content).Result;
 
             if (httpResponse.StatusCode != HttpStatusCode.OK)
             {
@@ -105,10 +112,11 @@ namespace ActiveApiHH.ru.AuthorizeAPI
 
 
             using HttpClient http = new HttpClient();
-            http.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
+            //http.DefaultRequestHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
             http.Timeout = TimeSpan.FromSeconds(180);
 
-            HttpResponseMessage httpResponse = http.PostAsync(builder.Uri.AbsoluteUri, new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()))).Result;
+            HttpResponseMessage httpResponse = http.PostAsync(builder.Uri.AbsoluteUri, new StringContent(JsonSerializer.Serialize(bodyRequest, bodyRequest.GetType()),
+                encoding: Encoding.UTF8,mediaType: "application/x-www-form-urlencoded")).Result;
 
             if (!httpResponse.IsSuccessStatusCode) {
                 return new ErrorApp
