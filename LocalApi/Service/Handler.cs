@@ -14,7 +14,15 @@ namespace LocalApi.Service
         /// <param name="ob"></param>
         /// <returns></returns>
         public string Exchange<T>(T ob) => JsonSerializer.Serialize<T>(ob);
-       
+
+
+        /// <summary>
+        /// Десериализуем данные 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ob"></param>
+        /// <returns></returns>
+        public T Reverse<T>(string ob) => JsonSerializer.Deserialize<T>(ob);
 
         /// <summary>
         /// Создаем объект с ошибкой
@@ -33,7 +41,7 @@ namespace LocalApi.Service
         /// <param name="parameters"></param>
         /// <returns></returns>
         public Loggs CreateLoggsBeforeInsert(DateTime _dateAction, string _action, string _actionResult,
-            Guid _token = default, string? _actionDetails = default, string? _errorMessage = default)
+            string? _token = default, string? _actionDetails = default, string? _errorMessage = default)
         {
             return new Loggs
             {
@@ -51,6 +59,9 @@ namespace LocalApi.Service
 
 
         }
+
+
+       
 
     }
 }

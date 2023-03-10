@@ -28,7 +28,7 @@ namespace LibraryModels.Repository
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Session? Find (string id) => _context.Sessions.Where(x => x.Acces_token == Guid.Parse(id)).FirstOrDefault();
+        public Session? Find (string id) => _context.Sessions.Where(x => x.Acces_token == id).FirstOrDefault();
 
         /// <summary>
         /// Обновляем данные

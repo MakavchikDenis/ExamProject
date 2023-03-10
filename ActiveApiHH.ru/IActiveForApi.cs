@@ -12,7 +12,7 @@ namespace ActiveApiHH.ru
 
         object GetToken( string authorization_code);
 
-        object GetRefresh_token(object session);
+        object GetRefresh_token(object? session);
 
     }
 }

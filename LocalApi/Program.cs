@@ -1,57 +1,20 @@
-using LibraryModels.Repository;
-using LocalApi.Service;
-using ActiveApiHH.ru;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
-
-var builder = WebApplication.CreateBuilder(args);
-
-// получаем конфиг. данные для Dapper и Ef
-var config = new ConfigurationBuilder().
-    AddJsonFile("appsettings.json").
-    Build();
-
-
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddHttpContextAccessor();
-
-// сервис для использования данных из настроечного файла в приложении
-builder.Services.AddScoped<IConfigurationRoot>(x => config);
-
-// сервис помощник
-builder.Services.AddScoped<IHandler, Handler>();
-
-//сервис логирования => через Dapper в таблицу
-builder.Services.AddTransient<IRepositoryDapper<Loggs>>(x => new RepositoryDapper(config["StringConnectForDapper"]));
-
-//сервисы реализованные через EF
-builder.Services.AddTransient<IRepository>(x => new Repository(config["StringConnectForEF"]));
-builder.Services.AddTransient<IRepositoryExtra>(x => new Repository(config["StringConnectForEF"]));
-
-// добавляем сервис для стороннего АПИ
-builder.Services.AddScoped<IActiveForApi, ActiveForApi>();
-
-
-var app = builder.Build();
-
-
-if (app.Environment.IsDevelopment())
+namespace ASB.Insurance.Komplat
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
 }
-
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.UseRouting();
-
-
-app.MapControllerRoute("default", "{controller}/{action}");
-
-app.Run();
