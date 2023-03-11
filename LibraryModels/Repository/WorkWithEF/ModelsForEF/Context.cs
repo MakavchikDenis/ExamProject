@@ -13,6 +13,7 @@ namespace LibraryModels.Repository
         private string ConnectToDb;
 
         public DbSet<Session> Sessions { get; set; }
+        public DbSet<UsersData> Users { get; set; }
 
         public Context(string _ConnectToDb) => this.ConnectToDb = _ConnectToDb;
 

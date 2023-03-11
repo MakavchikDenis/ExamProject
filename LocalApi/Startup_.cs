@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ASB.Insurance.Komplat
 {
-    public class Startup
+    public class Startup_
     {
-        public Startup(IConfiguration configuration)
+        public Startup_(IConfiguration configuration)
         {
             Configuration = configuration;
         }

@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
-using System.Collections.Specialized;
-using System.Net.Http;
-using API.Models;
+﻿using API.Models;
 using LibraryModels;
-using System.Text.Json;
+using System.Configuration;
 using System.Net;
 
 
@@ -17,9 +9,7 @@ namespace ActiveApiHH.ru.AuthorizeAPI
 {
     internal class Authorize : IAuthorize
     {
-        /// <summary>
-        /// Первоначальная аутентификация
-        /// </summary>
+        
         public Uri AuthorizeUri()
         {
             // получаем данные из конфиг. файла
@@ -44,7 +34,6 @@ namespace ActiveApiHH.ru.AuthorizeAPI
 
         }
 
-
         public object GetTokenRemoteApi(string authorization_code)
         {
             var collection = ConfigurationManager.AppSettings;
@@ -59,7 +48,7 @@ namespace ActiveApiHH.ru.AuthorizeAPI
                 code = authorization_code
             };
 
-            Uri uri = new Uri(String.Concat("https://",host, path));
+            Uri uri = new Uri(String.Concat("https://", host, path));
 
 
             List<KeyValuePair<string, string>> param = new List<KeyValuePair<string, string>>();
@@ -101,7 +90,7 @@ namespace ActiveApiHH.ru.AuthorizeAPI
             string? Host = collection.Get("RemoteHost");
             string? Path = collection.Get("RemotePathGetToken");
 
-            Uri uri = new Uri(String.Concat("https://",Host, Path));
+            Uri uri = new Uri(String.Concat("https://", Host, Path));
 
             var bodyRequest = new
             {
@@ -140,5 +129,34 @@ namespace ActiveApiHH.ru.AuthorizeAPI
 
 
         }
+
+        public object GetDataForUser(string accec_token)
+        {
+            var collectionConfigure = ConfigurationManager.AppSettings;
+            var hostApi = collectionConfigure.Get("RemoteHostForFollowingRequestMainApi");
+            var paramQueryHostDetails = collectionConfigure.Get("AddHostForRequest");
+            var paramHeaderAutorization = accec_token;
+            var paramHeaderUserAgent = collectionConfigure.Get("HH-User-Agent");
+            var path = collectionConfigure.Get("PathDataUser");
+
+            using HttpClient httpClient = new HttpClient();
+
+            string Uri = String.Concat("https://", hostApi, path, "?", $"host={paramQueryHostDetails}");
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, Uri);
+            requestMessage.Headers.Add("Authorization", String.Concat("Bearer  ", paramHeaderAutorization));
+            requestMessage.Headers.Add("HH-User-Agent", paramHeaderUserAgent);
+
+            HttpResponseMessage responseMessage = httpClient.SendAsync(requestMessage).Result;
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                return new ErrorApp(LevelError.ActiveWithRemoteApi, responseMessage.StatusCode.ToString(),
+                    "Ошибка запроса на сторонний сервис на этапе получения данных о пользователе");
+
+            }
+
+            return responseMessage.Content.ReadAsStringAsync().Result;
+        }
+
     }
 }

@@ -45,14 +45,15 @@ namespace LocalApi.Controllers
                 /// Проверяем результат сформировавшегося Uri, если успешно редиректим на страницу парнера
                 Uri RedirectUri = (Uri)ResultAuthorize;
 
-                //repositoryDapper.Insert(new Loggs()
-                //{
-                //    DateAction = DateTime.Now,
-                //    Action = String.Join("/", (string)RouteData.Values["controller"], (string)RouteData.Values["action"]),
-                //    ActionResult = "Succes",
+                repositoryDapper.Insert(new Loggs()
+                {
+                    DateAction = DateTime.Now,
+                    Action = String.Join("/", (string)RouteData.Values["controller"], (string)RouteData.Values["action"]),
+                    ActionResult = "Succes",
 
 
-                //});
+                });
+
 
                 return Redirect(RedirectUri.ToString());
 
@@ -63,16 +64,19 @@ namespace LocalApi.Controllers
             catch (ErrorApp e)
             {
                 (int level, string description, string message) = e;
-                
-                string Error = handler.Exchange<(int,string,string)>((level,description, message));
-                //repositoryDapper.Insert(new Loggs()
-                //{
-                //    DateAction = DateTime.Now,
-                //    Action = String.Join("/", (string)RouteData.Values["controller"], (string)RouteData.Values["action"]),
-                //    ActionResult = "Error",
-                //    ErrorMessage = Error
 
-                //});
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                repositoryDapper.Insert(new Loggs()
+                {
+                    DateAction = DateTime.Now,
+                    Action = String.Join("/", (string)RouteData.Values["controller"], (string)RouteData.Values["action"]),
+                    ActionResult = "Error",
+                    ErrorMessage = Error
+
+                });
 
                 return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={e.Message}"));
             }
@@ -81,8 +85,11 @@ namespace LocalApi.Controllers
                 ErrorApp error = new ErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка аутентификации.");
 
                 (int level, string description, string message) = error;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
-               
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -122,14 +129,14 @@ namespace LocalApi.Controllers
                 }
 
                 //Если промежуточный токен получен=> логируем и редиректим для получения основного токена
-                //repositoryDapper.Insert(new Loggs()
-                //{
-                //    DateAction = DateTime.Now,
-                //    Action = String.Join("/", (string)RouteData.Values["controller"], (string)RouteData.Values["action"]),
-                //    ActionResult = "Succes",
-                //    ActionDetails = code
+                repositoryDapper.Insert(new Loggs()
+                {
+                    DateAction = DateTime.Now,
+                    Action = String.Join("/", (string)RouteData.Values["controller"], (string)RouteData.Values["action"]),
+                    ActionResult = "Succes",
+                    ActionDetails = code
 
-                //});
+                });
 
 
                 return RedirectToAction(actionName: "GetTokenRemoteApi", controllerName: "Based", new { authorization_code = authorization_code });
@@ -138,7 +145,11 @@ namespace LocalApi.Controllers
             catch (ErrorApp e)
             {
                 (int level, string description, string message) = e;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -155,8 +166,13 @@ namespace LocalApi.Controllers
             {
 
                 ErrorApp error = new ErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе получения промежуточного токена от сервиса.");
+
                 (int level, string description, string message) = error;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 repositoryDapper.Insert(new Loggs()
                 {
                     DateAction = DateTime.Now,
@@ -181,7 +197,8 @@ namespace LocalApi.Controllers
         /// </summary>
         /// <param name="authorization_code"></param>
         [HttpGet("GetTokenRemoteApi")]
-        public object GetTokenRemoteApi([FromQuery] string authorization_code)
+        [ProducesResponseType(StatusCodes.Status200OK, Type =typeof(string))]
+        public IActionResult GetTokenRemoteApi([FromQuery] string authorization_code)
         {
             try
             {
@@ -193,41 +210,75 @@ namespace LocalApi.Controllers
 
                 }
 
-                // Токен получен, дозаполняем и вносим в БД
-                SessionApi sessionApi = handler.Reverse <SessionApi>((string)result); 
+                // Токен получен
+                SessionApi sessionApi = handler.Reverse<SessionApi>((string)result);
+
                 Session session = new Session(sessionApi);
-                //// получаем данные по пользователю
-                
+
+                // получаем данные по User из стороннего АПИ
+                var dataForUser = activeForRemoteApi.GetDataForUsers(session.Acces_token);
+
+                if (dataForUser.GetType() == typeof(ErrorApp)) { throw (ErrorApp)dataForUser; }
+
+                DataUserApi userApi = handler.Reverse<DataUserApi>((string)dataForUser);
+
+                ///дополняем сессию
+                session.IdUser = Int32.Parse(userApi.id);
+
+                UsersData user = new UsersData(userApi);
+
+                /// Смотрим имееются ли в БД данные по такому user=> если нет вносим, если да то только вносим сессию
                 /// вносим в БД все данные
-                //repository.Add<Session>(session);
+
+                var checkInDb = repository.Set<UsersData>().Where(x => x.IdUser == user.IdUser).FirstOrDefault();
+                if (checkInDb == default) {
+                    repository.Add<UsersData>(user);
+                }
+                
+                repository.Add<Session>(session);
+
 
                 // логируем
-                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), "Succes", _token: session.Acces_token,
-                    _actionDetails: authorization_code);
-                //repositoryDapper.Insert(loggs);
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), 
+                    "Succes", _token: session.Acces_token,_actionDetails: authorization_code);
 
-                return Redirect("");
+                repositoryDapper.Insert(loggs);
+
+                return Ok(session.Acces_token);
 
 
             }
             catch (ErrorApp e)
             {
                 (int level, string description, string message) = e;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), "Error",
                     _errorMessage: Error);
+
                 repositoryDapper.Insert(loggs);
+
                 return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={e.Message}"));
 
             }
             catch (Exception e)
             {
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе получения токена пользователя");
+
                 (int level, string description, string message) = error;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), "Error",
                     _errorMessage: Error);
+
                 repositoryDapper.Insert(loggs);
+
                 return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={error.Message}"));
 
             }
@@ -241,11 +292,14 @@ namespace LocalApi.Controllers
         /// </summary>
         /// <returns> Error || NewToken </returns>
         [NonAction]
-        public object GetRefresh_Token(Guid token) {
+        public object GetRefresh_Token(Guid token)
+        {
             try
             {
                 Session? sessionOld = repositoryExtra.Find(token.ToString());
+
                 var result = activeForRemoteApi.GetRefresh_token(sessionOld);
+
                 if (result.GetType() == typeof(ErrorApp)) { throw (ErrorApp)result; }
 
                 /// Добавляем в БД новые данные
@@ -257,8 +311,9 @@ namespace LocalApi.Controllers
                 repository.Add<Session>(sessionNew);
 
                 // логируем 
-                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Succes", _token: sessionNew.Acces_token,
-                   _actionDetails: token.ToString());
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Succes", 
+                    _token: sessionNew.Acces_token, _actionDetails: token.ToString());
+
                 repositoryDapper.Insert(loggs);
 
                 return sessionNew.Acces_token;
@@ -267,29 +322,43 @@ namespace LocalApi.Controllers
             catch (ErrorApp e)
             {
                 (int level, string description, string message) = e;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Error",
                     _errorMessage: Error);
+
                 repositoryDapper.Insert(loggs);
+
                 return e;
 
 
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
 
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе замены токена пользователя");
+
                 (int level, string description, string message) = error;
-                string Error = handler.Exchange<(int, string, string)>((level, description, message));
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Error",
                     _errorMessage: Error);
+
                 repositoryDapper.Insert(loggs);
+
                 return error;
 
             }
 
         }
-        
 
+        
 
     }
 }

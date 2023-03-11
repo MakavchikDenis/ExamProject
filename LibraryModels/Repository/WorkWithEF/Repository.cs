@@ -22,6 +22,7 @@ namespace LibraryModels.Repository
         /// <returns></returns>
         public List<T> Set<T>() where T : class => _context.Set<T>().ToList();
 
+
         /// <summary>
         /// Поиск сущности по параметру (по Токену)
         /// </summary>
@@ -35,7 +36,7 @@ namespace LibraryModels.Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ob"></param>
-        public void Updata<T>(T ob) where T : class {
+        public void Update<T>(T ob) where T : class {
             _context.Update<T>(ob).State = EntityState.Modified;
             _context.SaveChanges();
         }
