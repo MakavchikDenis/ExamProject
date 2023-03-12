@@ -15,10 +15,13 @@ namespace LocalApi.Controllers
         IRepository repository;
         IRepositoryExtra repositoryExtra;
         IActiveForApi activeForRemoteApi;
+        IRefresh_token refreshToken;
 
         public UpdateDataUserController(IRepositoryDapper<Loggs> _repositoryDapper, IHandler _handler, IRepository _repository, IRepositoryExtra _repositoryExtra,
-            IActiveForApi _activeForApi) => (repositoryDapper, handler, repository, repositoryExtra, activeForRemoteApi) = (_repositoryDapper,
-            _handler, _repository, _repositoryExtra, _activeForApi);
+            IActiveForApi _activeForApi, IRefresh_token _refresh_Token) => (repositoryDapper, handler, repository, repositoryExtra, activeForRemoteApi, refreshToken) =
+            (_repositoryDapper, _handler, _repository, _repositoryExtra, _activeForApi, _refresh_Token);
+
+
 
 
         /// <summary>
@@ -30,30 +33,99 @@ namespace LocalApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UsersData))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(UsersData))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(UsersData))]
         public async Task<object> GetUser([FromHeader] string? Token)
         {
+            // Записываем ответный токен
+            string? ResponseToken = Token;
+
             try
             {
                 if (Token is null)
                 {
-                    throw new ErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен", "Системная ошибка на этапе изменения данных пользователя.");
+                    throw new ErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен", "Системная ошибка на этапе получения данных пользователя.");
 
 
                 }
 
-                var sessionUser = repositoryExtra.Find(Token);
-                UsersData user = repository.Set<UsersData>().Where(x => x.IdUser == sessionUser.IdUser).First();
 
-                
+                //нахоим сессию пользователя
+                var sessionUser = repositoryExtra.Find(Token);
+
+                // Проверяем,что токен актуальный, если нет=>меняем токен в стороннем АПИ 
+                if (sessionUser.EndToken < DateTime.Now)
+                {
+                    var result = refreshToken.CreateRefresh_token(Token);
+
+                    // если ошибка выкидываем ее
+                    if (result.GetType() == typeof(ErrorApp))
+                    {
+                        throw (ErrorApp)result;
+
+                    }
+
+                    // если положительно => в ответный токен вносим новый токен
+                    ResponseToken = (string)result;
+
+
+                }
+
+                // из БД получаем данные по пользователю
+                UsersData user = repository.Set<UsersData>().Where(x => x.IdUser == sessionUser.IdUser).FirstOrDefault();
+
+                // если не найден выкидиваем ошибку
+                if (user == default) {
+                    throw new Exception("Пользователь не найден.");
+                }
+
+
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
-                    (string)RouteData.Values["action"]), "Succes", _token: Token);
+                    (string)RouteData.Values["action"]), "Succes", _token: ResponseToken);
 
                 repositoryDapper.Insert(loggs);
 
+                // в header отдаем новый токен
+                HttpContext.Response.Headers.Add("Token", ResponseToken);
                 return Ok(user);
 
 
             }
+            catch (ErrorApp e) when (Token is null)
+            {
+                (int level, string description, string message) = e;
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
+                    (string)RouteData.Values["action"]), "Error", _errorMessage: Error);
+
+                repositoryDapper.Insert(loggs);
+
+                HttpContext.Response.Headers.Add("Token", ResponseToken);
+                return BadRequest(e);
+
+
+            }
+            catch (ErrorApp e) {
+                (int level, string description, string message) = e;
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
+                    (string)RouteData.Values["action"]), "Error", _errorMessage: Error);
+
+                repositoryDapper.Insert(loggs);
+
+                HttpContext.Response.Headers.Add("Token", ResponseToken);
+                return BadRequest(e);
+
+
+            }
+
             catch (Exception e)
             {
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе изменения данных пользователя.");
@@ -69,6 +141,7 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
+                HttpContext.Response.Headers.Add("Token", ResponseToken);
                 return NotFound(error);
 
             }

@@ -12,6 +12,8 @@ namespace ActiveApiHH.ru.UpdataUser
     public class UpdateDataUser : IUpdateDataUser
     {
        public async Task UpdateMainData(UsersData ob,string acces_token){
+            
+            
             var collection = ConfigurationManager.AppSettings;
 
             Uri uri = new Uri(String.Concat("https://", collection.Get("RemoteHostForFollowingRequestMainApi"), "/", collection.Get("PathDataUser"),

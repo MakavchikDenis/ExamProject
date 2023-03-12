@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Program__.cs" />
+    <Compile Remove="Startup_.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="App.config" />
   </ItemGroup>
 

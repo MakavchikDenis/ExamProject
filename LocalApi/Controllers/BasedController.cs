@@ -1,14 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
 using ActiveApiHH.ru;
-using LibraryModels.Repository;
-using LibraryModels;
-using LocalApi.Service;
-using Microsoft.AspNetCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
-using System;
 using API.Models;
-using System.Text.Json;
+using LibraryModels;
+using LibraryModels.Repository;
+using LocalApi.Service;
+using Microsoft.AspNetCore.Mvc;
 namespace LocalApi.Controllers
 {
     [ApiController]
@@ -286,79 +281,6 @@ namespace LocalApi.Controllers
 
         }
 
-
-        /// <summary>
-        /// По истечению времени токена=>обращение в сторонний АПИ для получения нового токена
-        /// </summary>
-        /// <returns> Error || NewToken </returns>
-        [NonAction]
-        public object GetRefresh_Token(Guid token)
-        {
-            try
-            {
-                Session? sessionOld = repositoryExtra.Find(token.ToString());
-
-                var result = activeForRemoteApi.GetRefresh_token(sessionOld);
-
-                if (result.GetType() == typeof(ErrorApp)) { throw (ErrorApp)result; }
-
-                /// Добавляем в БД новые данные
-                SessionApi sessionApi = handler.Reverse<SessionApi>((String)result);
-
-                Session sessionNew = new Session(sessionApi);
-
-                ///создаем в БД новую сесию
-                repository.Add<Session>(sessionNew);
-
-                // логируем 
-                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Succes", 
-                    _token: sessionNew.Acces_token, _actionDetails: token.ToString());
-
-                repositoryDapper.Insert(loggs);
-
-                return sessionNew.Acces_token;
-
-            }
-            catch (ErrorApp e)
-            {
-                (int level, string description, string message) = e;
-
-                var ErrorForDB = new ErrorSerializing((level, description, message));
-
-                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
-
-                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Error",
-                    _errorMessage: Error);
-
-                repositoryDapper.Insert(loggs);
-
-                return e;
-
-
-            }
-            catch (Exception e)
-            {
-
-                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка на этапе замены токена пользователя");
-
-                (int level, string description, string message) = error;
-
-                var ErrorForDB = new ErrorSerializing((level, description, message));
-
-                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
-
-                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetRefresh_Token)), "Error",
-                    _errorMessage: Error);
-
-                repositoryDapper.Insert(loggs);
-
-                return error;
-
-            }
-
-        }
-
-        
 
     }
 }
