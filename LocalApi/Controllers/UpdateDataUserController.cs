@@ -32,12 +32,11 @@ namespace LocalApi.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UsersData))]
-        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(UsersData))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(UsersData))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorSerializing))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorSerializing))]
         public async Task<object> GetUser([FromHeader] string? Token)
         {
-            // Записываем ответный токен
-            string? ResponseToken = Token;
+           
 
             try
             {
@@ -52,23 +51,24 @@ namespace LocalApi.Controllers
                 //нахоим сессию пользователя
                 var sessionUser = repositoryExtra.Find(Token);
 
-                // Проверяем,что токен актуальный, если нет=>меняем токен в стороннем АПИ 
-                if (sessionUser.EndToken < DateTime.Now)
-                {
-                    var result = refreshToken.CreateRefresh_token(Token);
+                //// Проверяем,что токен актуальный, если нет=>меняем токен в стороннем АПИ 
+                //// Не проверить, так как на стороннем сервере также ведется контроль по сроку токена(((
+                //if (sessionUser.EndToken < DateTime.Now)
+                //{
+                //    var result = refreshToken.CreateRefresh_token(Token);
 
-                    // если ошибка выкидываем ее
-                    if (result.GetType() == typeof(ErrorApp))
-                    {
-                        throw (ErrorApp)result;
+                //    // если ошибка выкидываем ее
+                //    if (result.GetType() == typeof(ErrorApp))
+                //    {
+                //        throw (ErrorApp)result;
 
-                    }
+                //    }
 
-                    // если положительно => в ответный токен вносим новый токен
-                    ResponseToken = (string)result;
+                //    // если положительно => в ответный токен вносим новый токен
+                //    ResponseToken = (string)result;
 
 
-                }
+                //}
 
                 // из БД получаем данные по пользователю
                 UsersData user = repository.Set<UsersData>().Where(x => x.IdUser == sessionUser.IdUser).FirstOrDefault();
@@ -80,12 +80,12 @@ namespace LocalApi.Controllers
 
 
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
-                    (string)RouteData.Values["action"]), "Succes", _token: ResponseToken);
+                    (string)RouteData.Values["action"]), "Succes", _token: Token);
 
                 repositoryDapper.Insert(loggs);
 
-                // в header отдаем новый токен
-                HttpContext.Response.Headers.Add("Token", ResponseToken);
+                //// в header отдаем новый токен
+                //HttpContext.Response.Headers.Add("Token", Token);
                 return Ok(user);
 
 
@@ -103,8 +103,8 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                HttpContext.Response.Headers.Add("Token", ResponseToken);
-                return BadRequest(e);
+                //HttpContext.Response.Headers.Add("Token", Token);
+                return BadRequest(ErrorForDB);
 
 
             }
@@ -120,8 +120,8 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                HttpContext.Response.Headers.Add("Token", ResponseToken);
-                return BadRequest(e);
+                //HttpContext.Response.Headers.Add("Token", Token);
+                return BadRequest(ErrorForDB);
 
 
             }
@@ -141,8 +141,8 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                HttpContext.Response.Headers.Add("Token", ResponseToken);
-                return NotFound(error);
+                //HttpContext.Response.Headers.Add("Token", ResponseToken);
+                return NotFound(ErrorForDB);
 
             }
 
@@ -159,9 +159,10 @@ namespace LocalApi.Controllers
         /// <returns></returns>
         [HttpPost("UpdataMainDataUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorApp))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorSerializing))]
         public async Task<IActionResult> UpdataMainDataUser([FromHeader] string? Token, [FromBody] UsersData user)
         {
+            //string? ResponseToken = Token;
             try
             {
                 if (Token is null)
@@ -178,6 +179,7 @@ namespace LocalApi.Controllers
 
                 }
 
+                // обновляем данные в своей БД
                 repository.Update<UsersData>(user);
 
 
@@ -187,6 +189,7 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
+                //HttpContext.Response.Headers.Add("Token", ResponseToken);
                 return Ok();
 
 
@@ -204,7 +207,9 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                return BadRequest(e);
+                //HttpContext.Response.Headers.Add("Token", ResponseToken);
+
+                return BadRequest(ErrorForDB);
 
             }
             catch (Exception e)
@@ -222,7 +227,9 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                return BadRequest(error);
+                //HttpContext.Response.Headers.Add("Token", ResponseToken);
+
+                return BadRequest(ErrorForDB);
 
             }
 

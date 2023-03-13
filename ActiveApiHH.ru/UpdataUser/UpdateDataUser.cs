@@ -29,7 +29,7 @@ namespace ActiveApiHH.ru.UpdataUser
 
             parameters.Add(collection.Get("ParamUpdateLastName"), ob.SecondName);
 
-            parameters.Add(collection.Get("ParamUpdateMiddleName"), ob.MiddleName ?? "0");
+            parameters.Add(collection.Get("ParamUpdateMiddleName"), ob.MiddleName);
            
 
             using HttpClient client = new HttpClient();
@@ -37,13 +37,16 @@ namespace ActiveApiHH.ru.UpdataUser
             client.Timeout = TimeSpan.FromSeconds(180);
 
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri.ToString());
+            requestMessage.Headers.Add("Authorization", String.Join(" ", "Bearer", paraHeaderAuthorization));
+            requestMessage.Headers.Add("HH-User-Agent", paramUserAgent);
 
             var content = new FormUrlEncodedContent(parameters);
+            requestMessage.Content = content;
 
             HttpResponseMessage httpResponse = await client.SendAsync(requestMessage);
 
             if (httpResponse.StatusCode != HttpStatusCode.NoContent) {
-                throw new Exception(httpResponse.StatusCode.ToString());
+                throw new Exception(httpResponse.Content.ReadAsStringAsync().Result);
             
             }
 
