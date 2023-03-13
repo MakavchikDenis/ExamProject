@@ -4,13 +4,13 @@ using ActiveApiHH.ru;
 using LibraryModels.Repository;
 using LibraryModels;
 
+
 namespace LocalApi.Controllers
 {
 
-    
     [ApiController]
     [Route("api/Action")]
-    public class ActionVacanciens : Controller
+    public class ActionVacanciensController: Controller
     {
         IHandler handler;
         IActiveForApi activeForApi;
@@ -18,7 +18,7 @@ namespace LocalApi.Controllers
         IRepository repository;
         IRepositoryExtra repositoryExtra;
 
-        public ActionVacanciens (IHandler handler, IActiveForApi activeForApi, IRepositoryDapper<Loggs> repositoryDapper, IRepository repository,
+        public ActionVacanciensController(IHandler handler, IActiveForApi activeForApi, IRepositoryDapper<Loggs> repositoryDapper, IRepository repository,
             IRepositoryExtra repositoryExtra)
         {
             this.handler = handler;
@@ -35,16 +35,29 @@ namespace LocalApi.Controllers
         /// <param name="Token"></param>
         /// <returns></returns>
         [HttpGet]
-        public object SearchVacancies([FromHeader] string? Token, [FromQuery] string? SearchVacansies) {
+        public object SearchVacancies([FromHeader] string? Token, [FromQuery] string? SearchVacansies)
+        {
             try
             {
                 if (Token is null || SearchVacansies is null) { throw new Exception(); }
 
+                // получаем данные из стороннего АПИ
+                string Result = activeForApi.GetVacancies(Token, SearchVacansies);
+                ModelVacancies.ListVacancies modelVacancies = handler.Reverse<ModelVacancies.ListVacancies>(Result);
+
+                List<Vacancie> listResult = new List<Vacancie>();
+
+                foreach (var i in modelVacancies.items)
+                {
+                    listResult.Add(new Vacancie(i.id, i.name, i.area.url,
+                        i.salary is not null ? new Salary(i.salary.from, i.salary.to, i.salary.currency) : null,
+                        i.employer.name, i.snippet.requirement, i.snippet.responsibility));
 
 
+                }
 
 
-                return Ok();
+                return Ok(listResult);
 
             }
             catch (Exception) when (Token is null || SearchVacansies is null)
@@ -66,7 +79,8 @@ namespace LocalApi.Controllers
                 return BadRequest(ErrorForDB);
 
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
 
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка.");
 
@@ -81,11 +95,11 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                return Problem (detail:"Системная ошибка программы.", statusCode:StatusCodes.Status500InternalServerError);
+                return Problem(detail: "Системная ошибка программы.", statusCode: StatusCodes.Status500InternalServerError);
 
             }
 
-        
+
         }
     }
 }

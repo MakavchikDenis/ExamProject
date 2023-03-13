@@ -12,7 +12,10 @@ namespace ActiveApiHH.ru
 
         Lazy<UpdateDataUser> update = new Lazy<UpdateDataUser>();
 
-        IUpdateDataUser? iupdate = default;
+        Lazy<ActionVacancies> vacancies = new Lazy<ActionVacancies>();
+
+        IUpdateDataUser? iupdate;
+        IActionVacancies? iaction;
 
         public object GetAuthorizeUri()
         {
@@ -107,6 +110,12 @@ namespace ActiveApiHH.ru
                 return new ErrorApp(LevelError.ActiveWithRemoteApi, e.Message, "Системная ошибка на этапе изменения данных пользователя.");
             
             }
+        
+        }
+
+        public  string GetVacancies(string Token, string SearchText) {
+            iaction = vacancies.Value;
+            return iaction.SearchVacancies(Token, SearchText);
         
         }
 
