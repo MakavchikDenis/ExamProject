@@ -12,7 +12,7 @@ namespace LibraryModels.Repository
 
 
     /// <summary>
-    ///  Логгирование действие 
+    ///  Логирование действий 
     /// </summary>
     public class RepositoryDapper:IRepositoryDapper<Loggs>
     {

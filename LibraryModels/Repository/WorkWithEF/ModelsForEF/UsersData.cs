@@ -17,13 +17,13 @@ namespace LibraryModels.Repository
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
+        
         public int IdUser { get; set; }
 
-        [JsonPropertyName("first")]
+        
         public string FirstName { get; set; }=null!;
 
-        [JsonPropertyName("secondName")]
+       
         public string SecondName { get; set; }=null!;
 
 
@@ -33,7 +33,7 @@ namespace LibraryModels.Repository
 
         public string? Email { get; set; }
 
-        [Required]
+        
         public bool SearchWork { get; set; }
 
         public UsersData() { }

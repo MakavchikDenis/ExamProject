@@ -3,6 +3,7 @@ using LibraryModels;
 using LibraryModels.Repository;
 using LocalApi.Service;
 using Microsoft.AspNetCore.Mvc;
+using LibraryModels.FluentValidation;
 
 namespace LocalApi.Controllers
 {
@@ -171,7 +172,19 @@ namespace LocalApi.Controllers
 
                 }
 
-                // обвновляем данные на стороннем сервере
+                //проверяем полученные данные по пользователю
+                var validation = new UserDataValidation();
+                var resultCheck = validation.ValidateAsync(user).Result;
+
+                if (!resultCheck.IsValid)
+                {
+
+                    throw new Exception(resultCheck.Errors.First().ErrorMessage);
+                
+                }
+                
+
+                // обновляем данные на стороннем сервере
                 var result = await activeForRemoteApi.UpdateDataUser(user, Token);
                 if (result.GetType() == typeof(ErrorApp))
                 {
