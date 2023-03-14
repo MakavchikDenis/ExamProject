@@ -2,6 +2,8 @@ using LibraryModels.Repository;
 using LocalApi.Service;
 using ActiveApiHH.ru;
 using Microsoft.Extensions.Configuration;
+using Hangfire;
+using Hangfire.SqlServer;
 
 
 
@@ -20,7 +22,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
 
 // сервис для использования данных из настроечного файла в приложении
-builder.Services.AddScoped<IConfigurationRoot>(x => config);
+//!!Переделал=>hangfire некорректно работал при Scoped
+builder.Services.AddTransient<IConfigurationRoot>(x => config);
 
 // сервис помощник
 builder.Services.AddScoped<IHandler, Handler>();
@@ -33,11 +36,30 @@ builder.Services.AddTransient<IRepository>(x => new Repository(config["StringCon
 builder.Services.AddTransient<IRepositoryExtra>(x => new Repository(config["StringConnectForEF"]));
 
 // добавляем сервис для стороннего АПИ
-builder.Services.AddScoped<IActiveForApi, ActiveForApi>();
+builder.Services.AddTransient<IActiveForApi, ActiveForApi>();
 
 // доп. сервис для Refresh_Token
 builder.Services.AddTransient<IRefresh_token, Refresh_token>();
 
+// добавляем настройки БД для Hangfire
+builder.Services.AddHangfire(configuration => configuration.
+        SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(config["StringConnectForHangfire"], new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks = true
+        }));
+
+//добавляем сервис по запуску сервера
+builder.Services.AddHangfireServer();
+
+// добавляем сервис для работы с Hangfire
+builder.Services.AddTransient<IServiceForHangfire, ServiceForHangfire>();
 
 var app = builder.Build();
 
@@ -46,7 +68,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // добавляем интерфейс
+    app.UseHangfireDashboard();
 }
+
 
 
 app.UseHttpsRedirection();

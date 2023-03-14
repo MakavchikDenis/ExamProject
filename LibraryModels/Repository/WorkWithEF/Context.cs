@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using API.Models;
 
-namespace LibraryModels.Repository
+namespace LibraryModels.Repository.WorkWithEF
 {
     internal class Context : DbContext
     {
@@ -14,12 +14,14 @@ namespace LibraryModels.Repository
 
         public DbSet<Session> Sessions { get; set; }
         public DbSet<UsersData> Users { get; set; }
+        public DbSet<VacanciesUser> VacanciesUsers { get; set; }
 
-        public Context(string _ConnectToDb) => this.ConnectToDb = _ConnectToDb;
+        public Context(string _ConnectToDb) => ConnectToDb = _ConnectToDb;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(ConnectToDb);
-       
+
         
+       
 
     }
 }

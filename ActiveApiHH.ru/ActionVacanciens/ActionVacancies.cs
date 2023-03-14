@@ -13,7 +13,8 @@ namespace ActiveApiHH.ru
         public string SearchVacancies(string Token, string SearchText) {
             var collection = ConfigurationManager.AppSettings;
 
-            KeyValuePair<string, string> HeaderParam = new KeyValuePair<string, string>(key: "Authorization", value: String.Concat("Bearer ", Token));
+            //Не нужно-окрытый метод в стороннем апи
+            //KeyValuePair<string, string> HeaderParam = new KeyValuePair<string, string>(key: "Authorization", value: String.Concat("Bearer ", Token));
 
             KeyValuePair<string, string> HeaderParamUserAgent = new KeyValuePair<string, string>(key: "HH-User-Agent", value: collection.Get("HH-User-Agent"));
 
@@ -35,7 +36,7 @@ namespace ActiveApiHH.ru
 
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
-            requestMessage.Headers.Add(HeaderParam.Key, HeaderParam.Value);
+            //requestMessage.Headers.Add(HeaderParam.Key, HeaderParam.Value);
 
             requestMessage.Headers.Add(HeaderParamUserAgent.Key, HeaderParamUserAgent.Value);
 
