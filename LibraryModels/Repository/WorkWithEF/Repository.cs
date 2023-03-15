@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using API.Models;
 using LibraryModels.Repository.WorkWithEF;
+using System.Linq;
 
 namespace LibraryModels.Repository
 {
-    public class Repository:IRepository,IRepositoryExtra
+    public class Repository : IRepository, IRepositoryExtra
     {
         private Context _context;
 
@@ -30,14 +31,15 @@ namespace LibraryModels.Repository
         /// <typeparam name="T"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Session? Find (string id) => _context.Sessions.Where(x => x.Acces_token == id).FirstOrDefault();
+        public Session? Find(string id) => _context.Sessions.Where(x => x.Acces_token == id).FirstOrDefault();
 
         /// <summary>
         /// Обновляем данные
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ob"></param>
-        public void Update<T>(T ob) where T : class {
+        public void Update<T>(T ob) where T : class
+        {
             _context.Update<T>(ob).State = EntityState.Modified;
             _context.SaveChanges();
         }
@@ -48,10 +50,11 @@ namespace LibraryModels.Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ob"></param>
-        public void Add<T>(T ob) where T : class {
+        public void Add<T>(T ob) where T : class
+        {
             _context.Add<T>(ob);
             _context.SaveChanges();
-        
+
         }
 
         /// <summary>
@@ -59,11 +62,21 @@ namespace LibraryModels.Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="ob"></param>
-        public void Delete<T>(T ob) where T : class {
+        public void Delete<T>(T ob) where T : class
+        {
             _context.Remove<T>(ob);
             _context.SaveChanges();
-        
+
         }
+
+        /// <summary>
+        /// из View вытягиваем данные по отслеживаемым вакансиям пользователя
+        /// </summary>
+        /// <param name="idUser"></param>
+        /// <param name="textVacancie"></param>
+        /// <returns></returns>
+        public IQueryable<ViewVacancies> FindVacanciesForUser(string? idUser, string? textVacancie) => 
+            _context.ViewVacancies.Where(x => x.User == Int32.Parse(idUser) && x.Vacancie == textVacancie);
 
     }
 }

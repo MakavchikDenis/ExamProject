@@ -20,6 +20,8 @@ namespace LibraryModels.Repository
         public string? Required { get; set; }
         public string? Responsibility { get; set; }
 
+        public Vacancie() { }
+
         public Vacancie(string _id, string _name, string _url, Salary? _salaries, string employerName, string? required, string? responsibility)
         {
             this.Id = _id;

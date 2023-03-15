@@ -116,16 +116,17 @@ namespace LocalApi.Controllers
 
         /// <summary>
         /// Добавляем выбранную вакансию в отслеживаемые. И раз в сутки в сторонний апи делается запрос для данного пользователя для получения 
-        /// таких вакансий.
+        /// таких вакансий. Полученные данные записываем в БД.
         /// </summary>
         /// <param name="Token"></param>
         /// <param name="textSearch"></param>
         /// <returns></returns>
-        [HttpPost("GetTrackingVacancie/{textSearch}")]
+        [HttpPost("SetTrackingVacancies/{textSearch}")]
         [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
         [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(ErrorSerializing))]
         [ProducesErrorResponseType(typeof(ObjectResult))]
-        public IActionResult GetTrackingVacancie([FromHeader] string Token, [FromRoute] string textSearch) {
+        public object SetTrackingVacancie([FromHeader] string Token, [FromRoute] string textSearch)
+        {
             try
             {
 
@@ -181,7 +182,99 @@ namespace LocalApi.Controllers
             }
 
 
-        } 
-        
+        }
+
+
+        /// <summary>
+        /// Метод возращает результаты отслежимой вакансии. С учетом того что вакансии берутся из стороннего АПИ раз в день, в клиентский интерфейс отдается 
+        /// результаты последнего запроса в сторонний АПИ
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("GetTrackingVacancies/{idUser}/{textVacancie}")]
+        public JsonResult GetTrackingVacancies()
+        {
+
+            string? Token = default;
+
+            try
+            {
+                Token = HttpContext.Request.Headers["Token"];
+
+                if (Token is null)
+                {
+                    throw new Exception();
+                }
+
+                string? idUser = (string?)HttpContext.Request.RouteValues["idUser"];
+
+                string? textVacancie = (string?)HttpContext.Request.RouteValues["textVacancie"];
+                
+                VacanciesUser vacanciesUser = new VacanciesUser();
+
+                var ResultSearchDb = repositoryExtra.FindVacanciesForUser(idUser, textVacancie);
+
+                ViewVacancies OnlyResult = ResultSearchDb.OrderBy(x => x.Date).Last();
+
+                vacanciesUser.IdUser = OnlyResult.User;
+
+                vacanciesUser.DateUpdate = OnlyResult.Date;
+
+                vacanciesUser.Vacancies = handler.Reverse<List<Vacancie>>(OnlyResult.Content);
+
+                vacanciesUser.TextVacancie = OnlyResult.Vacancie;
+
+                HttpContext.Response.StatusCode = 200;
+
+
+                return Json(vacanciesUser);
+            }
+            catch (Exception) when (Token is null)
+            {
+
+                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен",
+                   "Не передан токен.");
+
+                (int level, string description, string message) = error;
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
+                    (string)RouteData.Values["action"]), "Error", _errorMessage: Error);
+
+                repositoryDapper.Insert(loggs);
+
+                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                return Json(ErrorForDB);
+
+
+            }
+
+            catch (Exception e)
+            {
+
+                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка.");
+
+                (int level, string description, string message) = error;
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
+                    (string)RouteData.Values["action"]), "Error", _errorMessage: Error);
+
+                repositoryDapper.Insert(loggs);
+
+                HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+                return Json(ErrorForDB);
+
+            }
+
+        }
+
     }
 }

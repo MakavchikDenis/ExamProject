@@ -14,6 +14,7 @@ namespace LocalApi.Service
         IRepository repository;
         IRepositoryExtra repositoryExtra;
         IActiveForApi activeForApi;
+        
        
 
         public ServiceForHangfire(IRepository _repository, IRepositoryExtra _repositoryExtra,IActiveForApi _activeForApi)
@@ -66,6 +67,7 @@ namespace LocalApi.Service
                 VacanciesUser vacanciesUser = new VacanciesUser();
 
                 vacanciesUser.IdUser = session.IdUser.Value;
+                vacanciesUser.TextVacancie = searchVacancie;
                 vacanciesUser.DateUpdate = DateTime.Now;
                 vacanciesUser.Content = JsonSerializer.SerializeToUtf8Bytes<List<Vacancie>>(listResult);
 

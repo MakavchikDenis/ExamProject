@@ -2,6 +2,7 @@
 using LibraryModels;
 using LibraryModels.Repository;
 using System;
+using System.IO;
 
 namespace LocalApi.Service
 {
@@ -15,6 +16,14 @@ namespace LocalApi.Service
         /// <returns></returns>
         public string Exchange<T>(T ob) => JsonSerializer.Serialize<T>(ob);
 
+        /// <summary>
+        /// сериализуем любой объект в массив байтов
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ob"></param>
+        /// <returns></returns>
+        public byte[] ExchangeToByte<T>(T ob) => JsonSerializer.SerializeToUtf8Bytes(ob);
+
 
         /// <summary>
         /// Десериализуем данные 
@@ -23,6 +32,19 @@ namespace LocalApi.Service
         /// <param name="ob"></param>
         /// <returns></returns>
         public T Reverse<T>(string ob) => JsonSerializer.Deserialize<T>(ob);
+
+        /// <summary>
+        /// Десериализуем из байтов
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="arrayBytes"></param>
+        /// <returns></returns>
+        public T Reverse<T>(byte[] arrayBytes) { 
+            using MemoryStream stream = new MemoryStream(arrayBytes);
+
+            return JsonSerializer.Deserialize<T>(stream);
+        
+        }
 
         /// <summary>
         /// Создаем объект с ошибкой

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LibraryModels.Repository
 {
@@ -17,8 +18,16 @@ namespace LibraryModels.Repository
 
         public int IdUser { get; set; }
 
-        public DateTime DateUpdate { get; set; } 
+        public string TextVacancie { get; set; }
 
+        public DateTime DateUpdate { get; set; }
+
+        // не сериализуется
+        [JsonIgnore]
         public byte[] Content { get; set; }
+
+        // в БД не ложим
+        [NotMapped]
+        public List<Vacancie> Vacancies { get; set; }
     }
 }
