@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LibraryModels.Repository;
+﻿using LibraryModels.Repository;
 using System.Configuration;
 using System.Net;
 
@@ -11,9 +6,10 @@ namespace ActiveApiHH.ru.UpdataUser
 {
     public class UpdateDataUser : IUpdateDataUser
     {
-       public async Task UpdateMainData(UsersData ob,string acces_token){
-            
-            
+        public async Task UpdateMainData(UsersData ob, string acces_token)
+        {
+
+
             var collection = ConfigurationManager.AppSettings;
 
             Uri uri = new Uri(String.Concat("https://", collection.Get("RemoteHostForFollowingRequestMainApi"), "/", collection.Get("PathDataUser"),
@@ -30,7 +26,7 @@ namespace ActiveApiHH.ru.UpdataUser
             parameters.Add(collection.Get("ParamUpdateLastName"), ob.SecondName);
 
             parameters.Add(collection.Get("ParamUpdateMiddleName"), ob.MiddleName);
-           
+
 
             using HttpClient client = new HttpClient();
 
@@ -45,12 +41,13 @@ namespace ActiveApiHH.ru.UpdataUser
 
             HttpResponseMessage httpResponse = await client.SendAsync(requestMessage);
 
-            if (httpResponse.StatusCode != HttpStatusCode.NoContent) {
+            if (httpResponse.StatusCode != HttpStatusCode.NoContent)
+            {
                 throw new Exception(httpResponse.Content.ReadAsStringAsync().Result);
-            
+
             }
 
-      
+
         }
 
     }

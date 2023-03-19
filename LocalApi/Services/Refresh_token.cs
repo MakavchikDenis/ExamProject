@@ -2,9 +2,6 @@
 using API.Models;
 using LibraryModels;
 using LibraryModels.Repository;
-using LocalApi.Service;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace LocalApi.Service
 {

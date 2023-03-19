@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 
 namespace LibraryModels.Repository
 {
-    [Table("DetailsVacanciesForUser",Schema ="Main")]
+    [Table("DetailsVacanciesForUser", Schema = "Main")]
     public class DetailsVacanciesForUser
     {
         [Key]
@@ -44,7 +39,7 @@ namespace LibraryModels.Repository
             this.idUser = _idUser;
             this.NameVacancy = _nameVacancy;
             this.UrlVacancy = _urlVacancy;
-            this.SalaryFrom= _salaryFrom;
+            this.SalaryFrom = _salaryFrom;
             this.SalaryTo = _salaryTo;
             this.SalaryCurrency = _salaryCurrency;
             this.EmployerName = _employerName;

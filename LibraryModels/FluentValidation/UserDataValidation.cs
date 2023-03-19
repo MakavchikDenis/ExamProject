@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using LibraryModels.Repository;
 using System.Text.RegularExpressions;
-using System;
 
 namespace LibraryModels.FluentValidation
 {
@@ -15,7 +9,8 @@ namespace LibraryModels.FluentValidation
 
         Dictionary<string, string> listErrors = new Dictionary<string, string>();
 
-        Func<string?,bool> helperForCheckEmail = (email) => {
+        Func<string?, bool> helperForCheckEmail = (email) =>
+        {
             return email switch
             {
                 null => true,
@@ -27,7 +22,8 @@ namespace LibraryModels.FluentValidation
 
 
 
-        public UserDataValidation() {
+        public UserDataValidation()
+        {
 
 
             // записываем ошибки
@@ -56,18 +52,19 @@ namespace LibraryModels.FluentValidation
 
         public bool CheckText(string checkValue) => Regex.IsMatch(checkValue, new Regex(@"^\D+$", RegexOptions.IgnoreCase).ToString());
 
-        void SetListErrors() {
+        void SetListErrors()
+        {
             listErrors.Add("NotNull", "Значение VAR не должно иметь значение null");
             listErrors.Add("NotZero", "Значение VAR не должно иметь значение - 0");
             listErrors.Add("NotCorrectText", "Некорректный формат VAR");
             listErrors.Add("NotRequiredLength", "Длинна поля VAR не соответствует требованиям.");
-            
+
         }
 
         string ReplaceMessage(string error, string replaceText) => error.Replace("VAR", replaceText);
 
-        
 
-        
+
+
     }
 }

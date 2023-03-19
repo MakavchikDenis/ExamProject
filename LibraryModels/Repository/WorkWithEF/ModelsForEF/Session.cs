@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LibraryModels.Repository;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
-using LibraryModels.Repository;
 
 namespace API.Models
 {
@@ -24,14 +19,15 @@ namespace API.Models
 
         public Session() { }
 
-        public Session(SessionApi sessionApi) {
+        public Session(SessionApi sessionApi)
+        {
             Acces_token = sessionApi.Access_token;
             Token_Type = sessionApi.Token_type;
             Expires_In = sessionApi.Expires_in;
             Refresh_token = sessionApi.Refresh_token;
             StartToken = DateTime.Now;
             EndToken = StartToken.Value.AddSeconds(Expires_In);
-        
+
         }
     }
 }

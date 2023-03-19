@@ -1,5 +1,4 @@
-﻿using System;
-namespace ActiveApiHH.ru.AuthorizeAPI
+﻿namespace ActiveApiHH.ru.AuthorizeAPI
 {
     internal interface IAuthorize
     {

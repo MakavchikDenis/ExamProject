@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
+﻿using Dapper;
 using System.Data;
-using Dapper;
+using System.Data.SqlClient;
 
 namespace LibraryModels.Repository
 {
@@ -14,7 +9,7 @@ namespace LibraryModels.Repository
     /// <summary>
     ///  Логирование действий 
     /// </summary>
-    public class RepositoryDapper:IRepositoryDapper<Loggs>
+    public class RepositoryDapper : IRepositoryDapper<Loggs>
     {
         private string Connect;
 

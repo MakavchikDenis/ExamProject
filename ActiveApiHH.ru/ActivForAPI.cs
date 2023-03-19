@@ -98,31 +98,35 @@ namespace ActiveApiHH.ru
 
         public object GetDataForUsers(string acces_token) => authorize.GetDataForUser(acces_token);
 
-        public async Task<object> UpdateDataUser(UsersData user,string acces_token) {
+        public async Task<object> UpdateDataUser(UsersData user, string acces_token)
+        {
             try
             {
                 iupdate = update.Value;
                 await iupdate.UpdateMainData(user, acces_token);
                 return "Ok";
-                
-                   
+
+
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 return new ErrorApp(LevelError.ActiveWithRemoteApi, e.Message, "Системная ошибка на этапе изменения данных пользователя.");
-            
+
             }
-        
+
         }
 
-        public  string GetVacancies(string Token, string SearchText) {
+        public string GetVacancies(string Token, string SearchText)
+        {
             iaction = vacancies.Value;
             return iaction.SearchVacancies(Token, SearchText);
-        
+
         }
 
-        public async Task<List<string>> SearchDetailsVacanciesAsync(string Token, string[] SearchVacancies) {
+        public async Task<List<string>> SearchDetailsVacanciesAsync(string Token, string[] SearchVacancies)
+        {
             iaction = vacancies.Value;
-            return await iaction.SearchDetailsVacanciesForUserAsync(Token,SearchVacancies);
+            return await iaction.SearchDetailsVacanciesForUserAsync(Token, SearchVacancies);
 
         }
 

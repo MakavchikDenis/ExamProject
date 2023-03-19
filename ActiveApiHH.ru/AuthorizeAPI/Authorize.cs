@@ -9,7 +9,7 @@ namespace ActiveApiHH.ru.AuthorizeAPI
 {
     internal class Authorize : IAuthorize
     {
-        
+
         public Uri AuthorizeUri()
         {
             // получаем данные из конфиг. файла

@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using LocalApi.Service;
-using ActiveApiHH.ru;
-using LibraryModels.Repository;
+﻿using ActiveApiHH.ru;
 using LibraryModels;
+using LibraryModels.Repository;
+using LocalApi.Service;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace LocalApi.Controllers
@@ -208,7 +208,7 @@ namespace LocalApi.Controllers
                 string? idUser = (string?)HttpContext.Request.RouteValues["idUser"];
 
                 string? textVacancy = (string?)HttpContext.Request.RouteValues["textVacancy"];
-                
+
                 VacanciesUser vacanciesUser = new VacanciesUser();
 
                 var ResultSearchDb = repositoryExtra.FindVacanciesForUser(idUser, textVacancy);

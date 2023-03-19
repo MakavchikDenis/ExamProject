@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using API.Models;
 using Microsoft.EntityFrameworkCore;
-using API.Models;
 
 namespace LibraryModels.Repository.WorkWithEF
 {
@@ -22,10 +17,11 @@ namespace LibraryModels.Repository.WorkWithEF
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(ConnectToDb);
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
 
             modelBuilder.Entity<ViewVacancies>().HasNoKey().ToView("ViewVacanciesForUser");
-            
+
 
         }
 

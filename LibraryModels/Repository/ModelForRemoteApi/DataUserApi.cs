@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LibraryModels.Repository
+﻿namespace LibraryModels.Repository
 {
     public class DataUserApi
     {
-        
+
         public string auth_type { get; set; }
         public bool is_applicant { get; set; }
         public bool is_employer { get; set; }

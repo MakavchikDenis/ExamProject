@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace LocalApi.Service
+﻿namespace LocalApi.Service
 {
     public interface IRefresh_token
     {

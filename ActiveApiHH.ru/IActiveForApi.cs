@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LibraryModels.Repository;
+﻿using LibraryModels.Repository;
 
 namespace ActiveApiHH.ru
 {
@@ -11,7 +6,7 @@ namespace ActiveApiHH.ru
     {
         object GetAuthorizeUri();
 
-        object GetToken( string authorization_code);
+        object GetToken(string authorization_code);
 
         object GetRefresh_token(object? session);
 

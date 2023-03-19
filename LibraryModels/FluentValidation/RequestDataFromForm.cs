@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.Primitives;
 
 namespace LibraryModels.FluentValidation
 {
-    public class RequestDataFromForm: AbstractValidator<List<KeyValuePair<string,StringValues>>>
+    public class RequestDataFromForm : AbstractValidator<List<KeyValuePair<string, StringValues>>>
     {
-        public RequestDataFromForm() {
+        public RequestDataFromForm()
+        {
 
             RuleFor<List<KeyValuePair<string, StringValues>>>(x => x).Must(CheckAllNamesParam).WithMessage("Некорректный формат в названии параматра.");
 

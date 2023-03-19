@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using API.Models;
+﻿using API.Models;
 using LibraryModels.Repository.WorkWithEF;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryModels.Repository
 {
@@ -75,7 +68,7 @@ namespace LibraryModels.Repository
         /// <param name="idUser"></param>
         /// <param name="textVacancie"></param>
         /// <returns></returns>
-        public IQueryable<ViewVacancies> FindVacanciesForUser(string? idUser, string? textVacancie) => 
+        public IQueryable<ViewVacancies> FindVacanciesForUser(string? idUser, string? textVacancie) =>
             _context.ViewVacancies.Where(x => x.User == Int32.Parse(idUser) && x.Vacancy == textVacancie);
 
 
@@ -85,7 +78,7 @@ namespace LibraryModels.Repository
         /// <param name="user"></param>
         /// <returns></returns>
         public List<DetailsVacanciesForUser> FindDetailsVacancies(string? user) => _context.DetailsVacanciesForUsers.ToList();
-            //Where(x => x.idUser == Int32.Parse(user)).ToList();
+        //Where(x => x.idUser == Int32.Parse(user)).ToList();
 
     }
 }

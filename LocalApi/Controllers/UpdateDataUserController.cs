@@ -1,9 +1,9 @@
 ﻿using ActiveApiHH.ru;
 using LibraryModels;
+using LibraryModels.FluentValidation;
 using LibraryModels.Repository;
 using LocalApi.Service;
 using Microsoft.AspNetCore.Mvc;
-using LibraryModels.FluentValidation;
 
 namespace LocalApi.Controllers
 {

@@ -192,7 +192,7 @@ namespace LocalApi.Controllers
         /// </summary>
         /// <param name="authorization_code"></param>
         [HttpGet("GetTokenRemoteApi")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type =typeof(string))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         public IActionResult GetTokenRemoteApi([FromQuery] string authorization_code)
         {
             try
@@ -226,16 +226,17 @@ namespace LocalApi.Controllers
                 /// вносим в БД все данные
 
                 var checkInDb = repository.Set<UsersData>().Where(x => x.IdUser == user.IdUser).FirstOrDefault();
-                if (checkInDb == default) {
+                if (checkInDb == default)
+                {
                     repository.Add<UsersData>(user);
                 }
-                
+
                 repository.Add<Session>(session);
 
 
                 // логируем
-                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)), 
-                    "Succes", _token: session.Acces_token,_actionDetails: authorization_code);
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", nameof(BasedController), nameof(GetTokenRemoteApi)),
+                    "Succes", _token: session.Acces_token, _actionDetails: authorization_code);
 
                 repositoryDapper.Insert(loggs);
 

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace LibraryModels.Repository
 {
@@ -17,14 +11,14 @@ namespace LibraryModels.Repository
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        
+
         public int IdUser { get; set; }
 
-        
-        public string FirstName { get; set; }=null!;    
 
-       
-        public string SecondName { get; set; }=null!;
+        public string FirstName { get; set; } = null!;
+
+
+        public string SecondName { get; set; } = null!;
 
 
         public string? MiddleName { get; set; }
@@ -33,7 +27,7 @@ namespace LibraryModels.Repository
 
         public string? Email { get; set; }
 
-        
+
         public bool SearchWork { get; set; }
 
         public UsersData() { }
