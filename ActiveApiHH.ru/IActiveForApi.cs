@@ -19,7 +19,9 @@ namespace ActiveApiHH.ru
 
         Task<object> UpdateDataUser(UsersData user, string acces_token);
 
-        public string GetVacancies(string Token, string SearchText);
+        string GetVacancies(string Token, string SearchText);
+
+        Task<List<string>> SearchDetailsVacanciesAsync(string Token, string[] SearchVacancies);
 
     }
 }

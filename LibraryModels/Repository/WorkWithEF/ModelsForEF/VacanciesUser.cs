@@ -18,7 +18,7 @@ namespace LibraryModels.Repository
 
         public int IdUser { get; set; }
 
-        public string TextVacancie { get; set; }
+        public string TextVacancy { get; set; }
 
         public DateTime DateUpdate { get; set; }
 
@@ -28,6 +28,6 @@ namespace LibraryModels.Repository
 
         // в БД не ложим
         [NotMapped]
-        public List<Vacancie> Vacancies { get; set; }
+        public List<Vacancy> Vacancies { get; set; }
     }
 }

@@ -16,6 +16,7 @@ namespace LibraryModels.Repository.WorkWithEF
         public DbSet<UsersData> Users { get; set; }
         public DbSet<VacanciesUser> VacanciesUsers { get; set; }
         public DbSet<ViewVacancies> ViewVacancies { get; set; }
+        public DbSet<DetailsVacanciesForUser> DetailsVacanciesForUsers { get; set; }
 
         public Context(string _ConnectToDb) => ConnectToDb = _ConnectToDb;
 
@@ -24,8 +25,10 @@ namespace LibraryModels.Repository.WorkWithEF
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
 
             modelBuilder.Entity<ViewVacancies>().HasNoKey().ToView("ViewVacanciesForUser");
+            
 
         }
+
 
 
 

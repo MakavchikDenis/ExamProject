@@ -9,7 +9,7 @@ using System.Data.Sql;
 namespace LibraryModels.Repository
 {
 
-    public class Vacancie
+    public class Vacancy
     {
 
         public string Id { get; set; }
@@ -20,9 +20,9 @@ namespace LibraryModels.Repository
         public string? Required { get; set; }
         public string? Responsibility { get; set; }
 
-        public Vacancie() { }
+        public Vacancy() { }
 
-        public Vacancie(string _id, string _name, string _url, Salary? _salaries, string employerName, string? required, string? responsibility)
+        public Vacancy(string _id, string _name, string _url, Salary? _salaries, string employerName, string? required, string? responsibility)
         {
             this.Id = _id;
             this.Name = _name;

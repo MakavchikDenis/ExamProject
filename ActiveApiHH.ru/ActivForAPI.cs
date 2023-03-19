@@ -14,6 +14,7 @@ namespace ActiveApiHH.ru
 
         Lazy<ActionVacancies> vacancies = new Lazy<ActionVacancies>();
 
+
         IUpdateDataUser? iupdate;
         IActionVacancies? iaction;
 
@@ -117,6 +118,12 @@ namespace ActiveApiHH.ru
             iaction = vacancies.Value;
             return iaction.SearchVacancies(Token, SearchText);
         
+        }
+
+        public async Task<List<string>> SearchDetailsVacanciesAsync(string Token, string[] SearchVacancies) {
+            iaction = vacancies.Value;
+            return await iaction.SearchDetailsVacanciesForUserAsync(Token,SearchVacancies);
+
         }
 
     }

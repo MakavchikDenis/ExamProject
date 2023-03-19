@@ -9,6 +9,8 @@ namespace ActiveApiHH.ru
 {
     internal interface IActionVacancies
     {
-        public string SearchVacancies(string Token, string SearchText);
+        string SearchVacancies(string Token, string SearchText);
+
+        Task<List<string>> SearchDetailsVacanciesForUserAsync(string Token, string[] SearchVacancies);
     }
 }

@@ -10,7 +10,7 @@ namespace LocalApi.Controllers
 
     [ApiController]
     [Route("api/Action")]
-    public class ActionVacanciensController : Controller
+    public partial class ActionVacanciensController : Controller
     {
         IHandler handler;
         IActiveForApi activeForApi;
@@ -37,26 +37,26 @@ namespace LocalApi.Controllers
         /// <param name="Token"></param>
         /// <returns></returns>
         [HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<Vacancie>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<Vacancy>))]
         [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(ErrorSerializing))]
         [ProducesErrorResponseType(typeof(ObjectResult))]
-        public object SearchVacancies([FromHeader] string? Token, [FromQuery] string? SearchVacansies)
+        public object SearchVacancies([FromHeader] string? Token, [FromQuery] string? SearchVacancy)
         {
             try
             {
 
-                if (Token is null || SearchVacansies is null) { throw new Exception(); }
+                if (Token is null || SearchVacancy is null) { throw new Exception(); }
 
                 // получаем данные из стороннего АПИ
-                string Result = activeForApi.GetVacancies(Token, SearchVacansies);
+                string Result = activeForApi.GetVacancies(Token, SearchVacancy);
 
                 ModelVacancies.ListVacancies modelVacancies = handler.Reverse<ModelVacancies.ListVacancies>(Result);
 
-                List<Vacancie> listResult = new List<Vacancie>();
+                List<Vacancy> listResult = new List<Vacancy>();
 
                 foreach (var i in modelVacancies.items)
                 {
-                    listResult.Add(new Vacancie(i.id, i.name, i.area.url,
+                    listResult.Add(new Vacancy(i.id, i.name, i.area.url,
                         i.salary is not null ? new Salary(i.salary.from, i.salary.to, i.salary.currency) : null,
                         i.employer.name, i.snippet.requirement, i.snippet.responsibility));
 
@@ -64,14 +64,14 @@ namespace LocalApi.Controllers
                 }
 
                 Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
-                    (string)RouteData.Values["action"]), "Succes", Token, SearchVacansies);
+                    (string)RouteData.Values["action"]), "Succes", Token, SearchVacancy);
 
                 repositoryDapper.Insert(loggs);
 
                 return Ok(listResult);
 
             }
-            catch (Exception) when (Token is null || SearchVacansies is null)
+            catch (Exception) when (Token is null || SearchVacancy is null)
             {
                 ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен либо название вакансии",
                     "Не передан токен либо название вакансии.");
@@ -121,11 +121,11 @@ namespace LocalApi.Controllers
         /// <param name="Token"></param>
         /// <param name="textSearch"></param>
         /// <returns></returns>
-        [HttpPost("SetTrackingVacancies/{textSearch}")]
+        [HttpPost("SetTrackingVacancy/{textSearch}")]
         [ProducesResponseType(statusCode: StatusCodes.Status204NoContent)]
         [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(ErrorSerializing))]
         [ProducesErrorResponseType(typeof(ObjectResult))]
-        public object SetTrackingVacancie([FromHeader] string Token, [FromRoute] string textSearch)
+        public object SetTrackingVacancy([FromHeader] string Token, [FromRoute] string textSearch)
         {
             try
             {
@@ -190,8 +190,8 @@ namespace LocalApi.Controllers
         /// результаты последнего запроса в сторонний АПИ
         /// </summary>
         /// <returns></returns>
-        [HttpGet("GetTrackingVacancies/{idUser}/{textVacancie}")]
-        public JsonResult GetTrackingVacancies()
+        [HttpGet("GetTrackingVacancy/{idUser}/{textVacancy}")]
+        public JsonResult GetTrackingVacancy()
         {
 
             string? Token = default;
@@ -207,11 +207,11 @@ namespace LocalApi.Controllers
 
                 string? idUser = (string?)HttpContext.Request.RouteValues["idUser"];
 
-                string? textVacancie = (string?)HttpContext.Request.RouteValues["textVacancie"];
+                string? textVacancy = (string?)HttpContext.Request.RouteValues["textVacancy"];
                 
                 VacanciesUser vacanciesUser = new VacanciesUser();
 
-                var ResultSearchDb = repositoryExtra.FindVacanciesForUser(idUser, textVacancie);
+                var ResultSearchDb = repositoryExtra.FindVacanciesForUser(idUser, textVacancy);
 
                 ViewVacancies OnlyResult = ResultSearchDb.OrderBy(x => x.Date).Last();
 
@@ -219,9 +219,9 @@ namespace LocalApi.Controllers
 
                 vacanciesUser.DateUpdate = OnlyResult.Date;
 
-                vacanciesUser.Vacancies = handler.Reverse<List<Vacancie>>(OnlyResult.Content);
+                vacanciesUser.Vacancies = handler.Reverse<List<Vacancy>>(OnlyResult.Content);
 
-                vacanciesUser.TextVacancie = OnlyResult.Vacancie;
+                vacanciesUser.TextVacancy = OnlyResult.Vacancy;
 
                 HttpContext.Response.StatusCode = 200;
 

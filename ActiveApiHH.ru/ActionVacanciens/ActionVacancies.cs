@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 using System.Net;
+using System.Linq;
 
 namespace ActiveApiHH.ru
 {
@@ -53,6 +54,58 @@ namespace ActiveApiHH.ru
 
 
 
+        
+        }
+
+        public async Task<List<string>> SearchDetailsVacanciesForUserAsync(string Token, string[] SearchVacancies) {
+
+            List<string> listResult = new List<string>();
+
+            listResult.Capacity = SearchVacancies.Count();
+
+            Task<string>[] arrayTasks = new Task<string>[SearchVacancies.Count()];
+
+            for (var i = 0; i<arrayTasks.Length;i++) {
+                arrayTasks[i] = GetForRemoteAPIAsync((string)Token.Clone(), SearchVacancies[i]);
+             
+            }
+
+            string[] arrayPrepareResult = await Task.WhenAll(arrayTasks);
+
+            return arrayPrepareResult.ToList();
+            
+
+        
+        }
+
+        private async Task<string> GetForRemoteAPIAsync(string Token, string SearchVacancy) {
+
+            var collention = ConfigurationManager.AppSettings;
+
+            var headerToken = String.Join(" ", "Bearer", Token);
+
+            var headerUserAgent = collention.Get("HH-User-Agent");
+
+            var queryParam = collention.Get("RemoteHost");
+
+            var pathParam = SearchVacancy;
+
+            var uri = String.Concat("https://", collention.Get("RemoteHostForFollowingRequestMainApi"), "/vacancies/", SearchVacancy, "?", "host=", queryParam);
+
+            using HttpClient client = new HttpClient();
+
+            client.Timeout = TimeSpan.FromSeconds(180);
+
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
+
+            requestMessage.Headers.Add("Authorization", headerToken);
+
+            requestMessage.Headers.Add("HH-User-Agent", headerUserAgent);
+
+            HttpResponseMessage responseMessage = await client.SendAsync(requestMessage);
+
+            return await responseMessage.Content.ReadAsStringAsync();
+        
         
         }
 

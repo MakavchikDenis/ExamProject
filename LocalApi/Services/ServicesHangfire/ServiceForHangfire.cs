@@ -49,11 +49,11 @@ namespace LocalApi.Service
             ModelVacancies.ListVacancies modelVacancies = JsonSerializer.Deserialize<ModelVacancies.ListVacancies>(Result);
 
 
-            List<Vacancie> listResult = new List<Vacancie>();
+            List<Vacancy> listResult = new List<Vacancy>();
 
             foreach (var i in modelVacancies.items)
             {
-                listResult.Add(new Vacancie(i.id, i.name, i.area.url,
+                listResult.Add(new Vacancy(i.id, i.name, i.area.url,
                     i.salary is not null ? new Salary(i.salary.from, i.salary.to, i.salary.currency) : null,
                     i.employer.name, i.snippet.requirement, i.snippet.responsibility));
 
@@ -67,9 +67,9 @@ namespace LocalApi.Service
                 VacanciesUser vacanciesUser = new VacanciesUser();
 
                 vacanciesUser.IdUser = session.IdUser.Value;
-                vacanciesUser.TextVacancie = searchVacancie;
+                vacanciesUser.TextVacancy = searchVacancie;
                 vacanciesUser.DateUpdate = DateTime.Now;
-                vacanciesUser.Content = JsonSerializer.SerializeToUtf8Bytes<List<Vacancie>>(listResult);
+                vacanciesUser.Content = JsonSerializer.SerializeToUtf8Bytes<List<Vacancy>>(listResult);
 
 
                 repository.Add<VacanciesUser>(vacanciesUser);

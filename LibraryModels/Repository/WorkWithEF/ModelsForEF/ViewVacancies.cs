@@ -10,7 +10,7 @@ namespace LibraryModels.Repository
     {
         public int Id { get; set; }
 
-        public string Vacancie { get; set; }
+        public string Vacancy { get; set; }
 
         public DateTime Date { get; set; }
 
