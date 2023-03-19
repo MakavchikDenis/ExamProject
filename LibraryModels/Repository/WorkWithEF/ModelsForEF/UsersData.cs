@@ -32,8 +32,16 @@ namespace LibraryModels.Repository
 
         public UsersData() { }
 
-        public UsersData(DataUserApi userApi) => (this.IdUser, this.FirstName, this.SecondName, this.MiddleName, this.Tel, this.Email, this.SearchWork) =
-            (Int32.Parse(userApi.id), userApi.first_name, userApi.last_name, userApi.mid_name is null ? null : (string)userApi.mid_name, userApi.phone ?? null,
-            userApi.email ?? null, userApi.is_in_search);
+        public UsersData(DataUserApi userApi)
+        {
+            this.IdUser = Int32.Parse(userApi.id);
+            this.FirstName = userApi.first_name;
+            this.SecondName = userApi.last_name;
+            this.MiddleName = userApi.middle_name is null ? null : userApi.middle_name.ToString();
+            this.Tel = userApi.phone ?? null;
+            this.Email = userApi.email ?? null;
+            this.SearchWork = userApi.is_in_search;
+        }
+                
     }
 }

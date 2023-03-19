@@ -12,7 +12,7 @@ namespace ActiveApiHH.ru.UpdataUser
 
             var collection = ConfigurationManager.AppSettings;
 
-            Uri uri = new Uri(String.Concat("https://", collection.Get("RemoteHostForFollowingRequestMainApi"), "/", collection.Get("PathDataUser"),
+            Uri uri = new Uri(String.Concat("https://", collection.Get("RemoteHostForFollowingRequestMainApi"), collection.Get("PathDataUser"),
                "?host=", collection.Get("AddHostForRequest")));
 
             var paraHeaderAuthorization = acces_token;
