@@ -28,7 +28,7 @@ namespace LocalApi.Controllers
         /// Стартовый метод для аутентификации => перенаправляет на сторонний АПИ для аутентификации
         /// </summary>
         [HttpGet]
-        public RedirectResult Index()
+        public IActionResult Index()
         {
             try
             {
@@ -73,7 +73,7 @@ namespace LocalApi.Controllers
 
                 });
 
-                return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={e.Message}"));
+                return BadRequest(ErrorForDB);
             }
             catch (Exception e)
             {
@@ -94,7 +94,7 @@ namespace LocalApi.Controllers
 
                 });
 
-                return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={error.Message}"));
+                return BadRequest(ErrorForDB);
 
 
             }
@@ -154,7 +154,7 @@ namespace LocalApi.Controllers
 
                 });
 
-                return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={e.Message}"));
+                return BadRequest(ErrorForDB);
 
             }
             catch (Exception e)
@@ -177,7 +177,7 @@ namespace LocalApi.Controllers
 
                 });
 
-                return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={error.Message}"));
+                return BadRequest(ErrorForDB);
             }
 
 
@@ -257,7 +257,7 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={e.Message}"));
+                return BadRequest(ErrorForDB);
 
             }
             catch (Exception e)
@@ -275,7 +275,7 @@ namespace LocalApi.Controllers
 
                 repositoryDapper.Insert(loggs);
 
-                return Redirect(String.Concat(config["UriWebApplication"], $"?ErrorPoint=1&Message={error.Message}"));
+                return BadRequest(ErrorForDB);
 
             }
 
