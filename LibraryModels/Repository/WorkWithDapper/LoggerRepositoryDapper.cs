@@ -9,11 +9,11 @@ namespace LibraryModels.Repository
     /// <summary>
     ///  Логирование действий 
     /// </summary>
-    public class RepositoryDapper : IRepositoryDapper<Loggs>
+    public class LoggerRepositoryDapper : IRepositoryDapper<Loggs>
     {
         private string Connect;
 
-        public RepositoryDapper(string _Connect) => this.Connect = _Connect;
+        public LoggerRepositoryDapper(string _Connect) => this.Connect = _Connect;
 
         /// <summary>
         /// Добавление в таблицу LoggsUsers

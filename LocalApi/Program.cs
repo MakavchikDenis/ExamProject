@@ -28,7 +28,7 @@ builder.Services.AddTransient<IConfigurationRoot>(x => config);
 builder.Services.AddScoped<IHandler, Handler>();
 
 //сервис логирования => через Dapper в таблицу
-builder.Services.AddTransient<IRepositoryDapper<Loggs>>(x => new RepositoryDapper(config["StringConnectForDapper"]));
+builder.Services.AddTransient<IRepositoryDapper<Loggs>>(x => new LoggerRepositoryDapper(config["StringConnectForDapper"]));
 
 //сервисы реализованные через EF
 builder.Services.AddTransient<IRepository>(x => new Repository(config["StringConnectForEF"]));
