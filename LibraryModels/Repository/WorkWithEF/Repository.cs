@@ -78,5 +78,14 @@ namespace LibraryModels.Repository
         public IQueryable<ViewVacancies> FindVacanciesForUser(string? idUser, string? textVacancie) => 
             _context.ViewVacancies.Where(x => x.User == Int32.Parse(idUser) && x.Vacancy == textVacancie);
 
+
+        /// <summary>
+        /// Получаем данные по вакансиям сохраненным для пользователя
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public List<DetailsVacanciesForUser> FindDetailsVacancies(string? user) => _context.DetailsVacanciesForUsers.ToList();
+            //Where(x => x.idUser == Int32.Parse(user)).ToList();
+
     }
 }

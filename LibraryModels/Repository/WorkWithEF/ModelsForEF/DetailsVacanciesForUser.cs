@@ -23,9 +23,9 @@ namespace LibraryModels.Repository
         [Column("Url")]
         public string? UrlVacancy { get; set; }
 
-        public float? SalaryFrom { get; set; }
+        public double? SalaryFrom { get; set; }
 
-        public float? SalaryTo { get; set; }
+        public double? SalaryTo { get; set; }
 
         public string? SalaryCurrency { get; set; }
 

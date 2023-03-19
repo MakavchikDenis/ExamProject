@@ -61,7 +61,7 @@ namespace LocalApi.Controllers
                 List<string> arrayDetailsForVacancies = activeForApi.SearchDetailsVacanciesAsync(Token, arrayRequestIdVacancy).Result;
 
 
-                List<ModelForDetailsVacancy.ModelForRemoteApi> arrayDeserializeForModel = new List<ModelForDetailsVacancy.ModelForRemoteApi> ();
+                List<ModelForDetailsVacancy.ModelForRemoteApi> arrayDeserializeForModel = new List<ModelForDetailsVacancy.ModelForRemoteApi>();
 
                 foreach (var i in arrayDetailsForVacancies)
                 {
@@ -100,8 +100,8 @@ namespace LocalApi.Controllers
             }
             catch (Exception e) when (Token is null)
             {
-                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен либо название вакансии",
-                    "Не передан токен либо название вакансии.");
+                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен",
+                    "Не передан токен.");
 
                 (int level, string description, string message) = error;
 
@@ -162,7 +162,76 @@ namespace LocalApi.Controllers
 
             }
 
+        }
 
+
+        /// <summary>
+        /// Возвращаем вакансии, которые были выбраны пользователем для сохранения
+        /// </summary>
+        /// <param name="Token"></param>
+        /// <returns></returns>
+        [HttpGet("GetVacanciesUser")]
+        public IActionResult GetVacanciesUser([FromHeader] string Token)
+        {
+
+            try
+            {
+                // проверяем наличие токена в запросе
+                if (Token is null) { throw new Exception(); }
+
+                // проверяем наличие параметров в запросе
+                if (HttpContext.Request.Query.Count==default)
+                {
+                    throw new Exception("Отсуствуют параметры.");
+
+                }
+
+                string idUser = HttpContext.Request.Query["idUser"];
+
+                List<DetailsVacanciesForUser> detailsVacanciesForUsers = repositoryExtra.FindDetailsVacancies(idUser);
+               
+                return Ok(detailsVacanciesForUsers);
+
+            }
+            catch (Exception) when (Token is null)
+            {
+                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, "Не передан токен",
+                    "Не передан токен.");
+
+                (int level, string description, string message) = error;
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
+                    (string)RouteData.Values["action"]), "Error", _errorMessage: Error);
+
+                repositoryDapper.Insert(loggs);
+
+                return BadRequest(ErrorForDB);
+
+
+            }
+            catch (Exception e)
+            {
+
+                ErrorApp error = handler.CreateErrorApp(LevelError.ActiveWithLocalApi, e.Message, "Системная ошибка.");
+
+                (int level, string description, string message) = error;
+
+                var ErrorForDB = new ErrorSerializing((level, description, message));
+
+                string Error = handler.Exchange<ErrorSerializing>(ErrorForDB);
+
+                Loggs loggs = handler.CreateLoggsBeforeInsert(DateTime.Now, String.Join("/", (string)RouteData.Values["controller"],
+                    (string)RouteData.Values["action"]), "Error", _errorMessage: Error);
+
+                repositoryDapper.Insert(loggs);
+
+                return Problem(detail: "Системная ошибка программы.", statusCode: StatusCodes.Status500InternalServerError);
+
+            }
 
 
         }

@@ -9,8 +9,10 @@ namespace LibraryModels.Repository
 {
     public interface IRepositoryExtra
     {
-        public Session? Find(string id);
+        Session? Find(string id);
 
-        public IQueryable<ViewVacancies> FindVacanciesForUser(string? idUser, string? textVacancie);
+        IQueryable<ViewVacancies> FindVacanciesForUser(string? idUser, string? textVacancie);
+
+        List<DetailsVacanciesForUser> FindDetailsVacancies(string? user);
     }
 }
